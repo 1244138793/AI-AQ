@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiaq.mapper.ScoringResultMapper">
+
+    <select id="detailScoringResult" resultType="com.aiaq.model.vo.ScoringResultDetailVO">
+        SELECT
+            sr.id,
+            sr.resultName,
+            sr.resultDesc,
+            sr.resultProp resultPropStr,
+            sr.resultScoreRange,
+            sr.appId,
+            a.appName,
+            sr.userId,
+            u.userName,
+            DATE_FORMAT(sr.createTime, '%Y-%m-%d %H:%i:%s')
+        FROM scoring_result sr
+        LEFT JOIN app a ON sr.appId = a.id
+        LEFT JOIN user u ON sr.userId = u.id
+        WHERE sr.id = #{scoringResultId} AND sr.isDelete = 0
+    </select>
+
+    <select id="listScoringResult" resultType="com.aiaq.model.vo.ScoringResultVO">
+        SELECT
+            sr.id,
+            sr.resultName,
+            sr.resultDesc,
+            sr.resultProp resultPropStr,
+            sr.resultScoreRange,
+            sr.appId,
+            a.appName,
+            sr.userId,
+            u.userName,
+            DATE_FORMAT(sr.createTime, '%Y-%m-%d %H:%i:%s') createTime
+        FROM scoring_result sr
+        LEFT JOIN app a ON sr.appId = a.id
+        LEFT JOIN user u ON sr.userId = u.id
+        <where>
+            sr.userId = #{userId}
+            and a.isDelete = 0
+            <choose>
+                <when test="isAdmin">
+                    or 1 = 1
+                </when>
+                <otherwise>
+                    or 1 != 1
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY sr.createTime DESC
+    </select>
+</mapper>
