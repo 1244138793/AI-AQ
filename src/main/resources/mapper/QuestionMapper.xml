@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiaq.mapper.QuestionMapper">
+
+    <select id="detailQuestion" resultType="com.aiaq.model.vo.QuestionVO">
+        SELECT
+            question.id,
+            question.questionContent questionContentStr,
+            question.appId,
+            app.appName,
+            question.userId,
+            user.userName,
+            DATE_FORMAT(question.createTime, '%Y-%m-%d %H:%i:%s')
+        FROM question
+        LEFT JOIN user ON question.userId = user.id
+        LEFT JOIN app ON question.appId = app.id
+        WHERE question.isDelete = 0 AND question.id = #{questionId}
+    </select>
+</mapper>
