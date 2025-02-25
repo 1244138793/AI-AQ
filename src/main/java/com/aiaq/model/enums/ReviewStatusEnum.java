@@ -1,0 +1,43 @@
+package com.aiaq.model.enums;
+
+import cn.hutool.core.util.ObjectUtil;
+import lombok.Getter;
+
+/**
+ * @Author 最紧要开心
+ * @CreateTime 2024/9/11 13:06
+ * @Description 审核状态枚举
+ */
+@Getter
+public enum ReviewStatusEnum {
+
+    REVIEWING("待审核", 0),
+    PASS("通过", 1),
+    REJECT("拒绝", 2);
+
+    private final String text;
+    private final int value;
+
+    ReviewStatusEnum(String text, int value) {
+        this.text = text;
+        this.value = value;
+    }
+
+    /**
+     * 根据 value 获取枚举
+     *
+     * @param value
+     * @return
+     */
+    public static ReviewStatusEnum getEnumByValue(Integer value) {
+        if (ObjectUtil.isEmpty(value)) {
+            return null;
+        }
+        for (ReviewStatusEnum anEnum : ReviewStatusEnum.values()) {
+            if (anEnum.value == value) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
+}

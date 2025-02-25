@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiaq.mapper.UserAnswerMapper">
+
+    <select id="listUserAnswer" resultType="com.aiaq.model.vo.UserAnswerVO">
+        SELECT ua.id,
+               ua.appId,
+               ua.appType appTypeCode,
+               ua.appType appType,
+               ua.scoringStrategy scoringStrategyCode,
+               ua.scoringStrategy scoringStrategy,
+               ua.choices,
+               ua.resultName,
+               ua.resultDesc,
+               ua.resultScore,
+               ua.userId userId,
+               DATE_FORMAT(ua.createTime, '%Y-%m-%d %H:%i:%s') createTime
+        FROM user_answer ua
+        <where>
+            ua.userId = #{userId} AND ua.isDelete = 0
+            <if test="userAnswerQueryRequest.resultName != null and userAnswerQueryRequest.resultName != ''">
+                AND ua.resultName LIKE CONCAT('%', #{userAnswerQueryRequest.resultName}, '%')
+            </if>
+            <if test="userAnswerQueryRequest.resultDesc != null and userAnswerQueryRequest.resultDesc != ''">
+                AND ua.resultDesc LIKE CONCAT('%', #{userAnswerQueryRequest.resultDesc}, '%')
+            </if>
+        </where>
+        ORDER BY ua.createTime DESC
+    </select>
+</mapper>
