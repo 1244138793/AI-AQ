@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiaq.mapper.AppMapper">
+
+    <select id="listApp" resultType="com.aiaq.model.vo.AppVO">
+        SELECT
+            app.id,
+            app.appName,
+            app.appDesc,
+            app.appType,
+            CASE app.appType
+                WHEN 0 THEN '得分类'
+                ELSE '测评类'
+            END AS appTypeName,
+            app.scoringStrategy,
+            CASE app.scoringStrategy
+                WHEN 0 THEN '自定义'
+                ELSE 'AI'
+            END AS scoringStrategyName,
+            app.reviewStatus,
+            CASE app.reviewStatus
+                WHEN 0 THEN '待审核'
+                WHEN 1 THEN '通过'
+                ELSE '拒绝'
+            END AS reviewStatusName,
+            user.userName AS createUser,
+            app.reviewMessage,
+            app.reviewerId,
+            DATE_FORMAT(app.reviewTime, '%Y-%m-%d %H:%i:%s') AS reviewTime,
+            app.userId,
+            DATE_FORMAT(app.createTime, '%Y-%m-%d %H:%i:%s') AS createTime
+        FROM app
+        LEFT JOIN user ON app.userId = user.id
+        <where>
+            (app.userId = #{userId}
+            <if test="appQueryRequest.appName != null and appQueryRequest.appName != ''">
+                and app.appName like concat('%', #{appQueryRequest.appName}, '%')
+            </if>
+            <if test="appQueryRequest.appType != null">
+                and app.appType in
+                <foreach collection="appQueryRequest.appType" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="appQueryRequest.scoringStrategy != null">
+                and app.scoringStrategy in
+                <foreach collection="appQueryRequest.scoringStrategy" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="appQueryRequest.reviewStatus != null">
+                and app.reviewStatus in
+                <foreach collection="appQueryRequest.reviewStatus" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="appQueryRequest.createUser != null and appQueryRequest.createUser != ''">
+                and user.userName like concat('%', #{appQueryRequest.createUser}, '%')
+            </if>
+            <if test="appQueryRequest.createBeginTime != null and appQueryRequest.createBeginTime != ''">
+                and date_format(app.createTime, %Y-%m-%d %H:%i:%s) &gt;= #{appQueryRequest.createBeginTime}
+            </if>
+            <if test="appQueryRequest.createEndTime != null and appQueryRequest.createEndTime != ''">
+                and date_format(app.createTime, %Y-%m-%d %H:%i:%s) &lt;= #{appQueryRequest.createEndTime}
+            </if>
+            <choose>
+                <when test="isAdmin">
+                    or 1 = 1
+                </when>
+                <otherwise>
+                    or 1 != 1
+                </otherwise>
+            </choose>
+            )
+            and app.isDelete = 0
+        </where>
+        ORDER BY app.reviewStatus ASC, app.createTime DESC
+    </select>
+
+    <select id="detailApp" resultType="com.aiaq.model.vo.AppDetailVO">
+        SELECT
+            app.id,
+            app.appName,
+            app.appIcon,
+            app.appType,
+            CASE app.appType
+                WHEN 0 THEN '得分类'
+                ELSE '测评类'
+            END AS appTypeName,
+            app.scoringStrategy,
+            CASE app.scoringStrategy
+                WHEN 0 THEN '自定义'
+                ELSE 'AI'
+            END AS scoringStrategyName,
+            app.reviewStatus,
+            CASE app.reviewStatus
+                WHEN 0 THEN '待审核'
+                WHEN 1 THEN '通过'
+                ELSE '拒绝'
+            END AS reviewStatusName,
+            app.reviewMessage,
+            user2.userName AS reviewer,
+            DATE_FORMAT(app.reviewTime, '%Y-%m-%d %H:%i:%s') AS reviewTime,
+            user1.userName AS createUser,
+            DATE_FORMAT(app.createTime, '%Y-%m-%d %H:%i:%s') AS createTime
+        FROM app
+        LEFT JOIN user user1 ON app.userId = user1.id
+        LEFT JOIN user user2 ON app.reviewerId = user2.id
+        WHERE app.id = #{appId} AND app.isDelete = 0
+    </select>
+
+    <select id="listIndexApp" resultType="com.aiaq.model.vo.AppVO">
+        SELECT
+        app.id,
+        app.appName,
+        app.appDesc,
+        user.userName AS createUser
+        FROM app
+        LEFT JOIN user ON app.userId = user.id
+        <where>
+            app.reviewStatus = 1
+            and app.isDelete = 0
+            <if test="appQueryRequest.appName != null and appQueryRequest.appName != ''">
+                and app.appName like concat('%', #{appQueryRequest.appName}, '%')
+            </if>
+        </where>
+        ORDER BY app.createTime DESC
+    </select>
+</mapper>
